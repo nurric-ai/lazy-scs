@@ -4,7 +4,9 @@ title: "Lazy Periodic Rules: A Scalable Implementation of the Factor-2 Approxima
 authors:
   - family-names: Dere
     given-names: Krushna
-    affiliation: "Svyatoblood independent researchers"
+    affiliation: "Independent researcher"
+  - given-names: Svyatoblood
+    affiliation: "Independent researcher"
 license: MIT
 version: "1.0.0"
 date-released: "2026-10-13"

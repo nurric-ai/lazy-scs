@@ -5,7 +5,7 @@ superstring** (SCS), [openai/math result 128](https://github.com/openai/math), u
 and **suffix-automaton counts**.
 
 > **Lazy Periodic Rules: A Scalable Implementation of the Factor-2 Approximation for Shortest Common
-> Superstring**, Krushna Dere, Svyatoblood independent researchers, October 2026. [paper/paper.pdf](paper/paper.pdf)
+> Superstring**, Krushna Dere and Svyatoblood, independent researchers, October 2026. [paper/paper.pdf](paper/paper.pdf)
 
 Given strings `s1 … sn`, SCS asks for a shortest string containing every `si` as a substring. The
 factor-2 algorithm builds its lower bound from forced occurrence counts on every distinct substring,
@@ -98,7 +98,7 @@ Expected output: warnings only, and each `#print axioms` lists `propext`, `Class
 ## Disclosure of AI assistance
 
 An AI assistant (referred to here as wigip) wrote the implementation, ran the experiments and drafted
-the paper under the author's direction. The author is responsible for the content.
+the paper under the authors' direction. The authors are responsible for the content.
 
 ## Credits
 
