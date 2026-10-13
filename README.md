@@ -44,7 +44,26 @@ and greedy versus the factor-2 algorithm on Shibata's counterexample to the gree
 has no model of sequencing errors. On typical inputs, plain greedy produces superstrings that are just
 as short. The contribution is scale plus a worst-case guarantee with a per-instance certificate.
 
-## Usage
+## Install
+
+```bash
+pip install lazy-scs
+```
+
+Prebuilt wheels for Linux, macOS and Windows (Python 3.9+); other platforms build from source and need Rust.
+
+```python
+import lazy_scs
+
+lazy_scs.shortest_superstring(["GATTACA", "TACAGG", "AGGCT"])   # 'GATTACAGGCT'
+
+r = lazy_scs.solve(reads, verify=True)   # list of str or bytes
+r.superstring, r.lower_bound, r.ratio    # ratio = len / lower_bound; 1.0 = provably optimal
+```
+
+The package also installs a `lazy-scs` command (`lazy-scs reads.txt -o superstring.txt --verify`).
+
+## Usage (Rust command line)
 
 ```bash
 cd scs/scs-rs
@@ -62,6 +81,8 @@ rounds, and which branches of the construction ran. On Windows, if the project p
 
 | path | contents |
 |---|---|
+| `pyproject.toml`, `python/` | the `lazy-scs` Python package (PyO3 bindings in `scs/scs-rs/src/python.rs`) and its tests |
+| `.github/workflows/wheels.yml` | builds and tests wheels on every push; publishes to PyPI on a `v*` tag |
 | `scs/scs-rs/` | Rust implementation: `sam.rs` (automaton, trimming), `counts.rs` (step-function counts, lazy rules), `approx.rs` (layers, connection, Euler tour), `verify.rs` (independent checker) |
 | `scs/scs2.py` | Python reference implementation of the paper, one entry per substring, invariants asserted |
 | `scs/compressed.py`, `scs/pipeline_c.py` | Python compressed counts and lazy pipeline |

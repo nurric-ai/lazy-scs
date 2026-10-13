@@ -1,0 +1,131 @@
+# Build `lazy-scs` wheels for Linux / macOS / Windows (one abi3 wheel per platform covers Python 3.9+),
+# test every wheel, and publish to PyPI when a version tag (v*) is pushed.
+# Publishing uses PyPI trusted publishing (OIDC): no API token is stored in this repository.
+name: wheels
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  linux:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        target: [x86_64, aarch64]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: PyO3/maturin-action@v1
+        with:
+          target: ${{ matrix.target }}
+          args: --release --out dist
+          manylinux: auto
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wheels-linux-${{ matrix.target }}
+          path: dist
+
+  macos:
+    strategy:
+      matrix:
+        include:
+          - runner: macos-14   # Apple-silicon runner; the Intel wheel is cross-compiled
+            target: x86_64
+          - runner: macos-14
+            target: aarch64
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: PyO3/maturin-action@v1
+        with:
+          target: ${{ matrix.target }}
+          args: --release --out dist
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wheels-macos-${{ matrix.target }}
+          path: dist
+
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: PyO3/maturin-action@v1
+        with:
+          target: x64
+          args: --release --out dist
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wheels-windows-x64
+          path: dist
+
+  sdist:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: PyO3/maturin-action@v1
+        with:
+          command: sdist
+          args: --out dist
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sdist
+          path: dist
+
+  test:
+    needs: [linux, macos, windows]
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            wheels: wheels-linux-x86_64
+            python: "3.9"
+          - os: ubuntu-latest
+            wheels: wheels-linux-x86_64
+            python: "3.13"
+          - os: macos-14
+            wheels: wheels-macos-aarch64
+            python: "3.12"
+          - os: windows-latest
+            wheels: wheels-windows-x64
+            python: "3.12"
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - uses: actions/download-artifact@v4
+        with:
+          name: ${{ matrix.wheels }}
+          path: dist
+      - name: install the wheel (not the source tree) and run the tests
+        shell: bash
+        run: |
+          python -m pip install pytest
+          python -m pip install --no-index --find-links dist lazy-scs
+          cd python/tests && python -m pytest -q -p no:cacheprovider
+          python -c "import doctest, lazy_scs; r = doctest.testmod(lazy_scs); assert r.failed == 0, r"
+
+  publish:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [test, sdist]
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      id-token: write   # trusted publishing
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: "*"
+          merge-multiple: true
+          path: dist
+      - uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: dist

@@ -1,0 +1,35 @@
+[build-system]
+requires = ["maturin>=1.7,<2"]
+build-backend = "maturin"
+
+[project]
+name = "lazy-scs"
+version = "1.0.0"
+description = "Scalable factor-2 approximation for the shortest common superstring, with a certified lower bound"
+readme = "python/README.md"
+license = { text = "MIT" }
+authors = [{ name = "Krushna Dere" }, { name = "Svyatoblood" }]
+requires-python = ">=3.9"
+keywords = ["shortest common superstring", "approximation algorithm", "genome assembly", "suffix automaton", "strings"]
+classifiers = [
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Rust",
+    "Topic :: Scientific/Engineering :: Bio-Informatics",
+    "Topic :: Scientific/Engineering :: Mathematics",
+]
+
+[project.urls]
+Repository = "https://github.com/nurric-ai/lazy-scs"
+Paper = "https://github.com/nurric-ai/lazy-scs/blob/main/paper/paper.pdf"
+
+[project.scripts]
+lazy-scs = "lazy_scs.__main__:main"
+
+[tool.maturin]
+manifest-path = "scs/scs-rs/Cargo.toml"
+python-source = "python"
+module-name = "lazy_scs._core"
+features = ["python"]
+bindings = "pyo3"
+include = [{ path = "LICENSE", format = ["sdist", "wheel"] }]

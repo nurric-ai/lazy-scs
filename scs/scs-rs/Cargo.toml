@@ -1,6 +1,22 @@
 [package]
 name = "scs-rs"
-version = "0.1.0"
+version = "1.0.0"
 edition = "2024"
+description = "Scalable factor-2 approximation for shortest common superstring (lazy periodic rules)"
+license = "MIT"
+repository = "https://github.com/nurric-ai/lazy-scs"
+
+[lib]
+name = "lazy_scs_core"
+crate-type = ["cdylib", "rlib"]
+
+[[bin]]
+name = "scs-rs"
+path = "src/main.rs"
+
+[features]
+# `python` builds the lazy_scs._core extension module (maturin, see pyproject.toml at the repo root)
+python = ["dep:pyo3"]
 
 [dependencies]
+pyo3 = { version = "0.23", features = ["extension-module", "abi3-py39"], optional = true }
