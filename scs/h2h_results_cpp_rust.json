@@ -1,0 +1,66 @@
+[
+ {
+  "genome": 1000,
+  "reads": 66,
+  "chars": 9900,
+  "js": "not run",
+  "cpp": "timeout after 300s, 461 MB",
+  "rust": "0.08s, 2 MB, len 1107, W 980"
+ },
+ {
+  "genome": 3000,
+  "reads": 200,
+  "chars": 30000,
+  "js": "not run",
+  "cpp": "skipped",
+  "rust": "0.12s, 6 MB, len 3112, W 2971"
+ },
+ {
+  "genome": 10000,
+  "reads": 666,
+  "chars": 99900,
+  "js": "not run",
+  "cpp": "skipped",
+  "rust": "0.22s, 16 MB, len 9992, W 9992"
+ },
+ {
+  "genome": 30000,
+  "reads": 2000,
+  "chars": 300000,
+  "js": "not run",
+  "cpp": "skipped",
+  "rust": "0.52s, 44 MB, len 29954, W 29954"
+ },
+ {
+  "genome": 100000,
+  "reads": 6666,
+  "chars": 999900,
+  "js": "not run",
+  "cpp": "skipped",
+  "rust": "1.92s, 143 MB, len 99977, W 99976"
+ },
+ {
+  "genome": 300000,
+  "reads": 20000,
+  "chars": 3000000,
+  "js": "not run",
+  "cpp": "skipped",
+  "rust": "6.17s, 417 MB, len 299228, W 298944"
+ },
+ {
+  "genome": 1000000,
+  "reads": 66666,
+  "chars": 9999900,
+  "js": "not run",
+  "cpp": "skipped",
+  "rust": "22.09s, 1374 MB, len 995222, W 994805"
+ },
+ {
+  "genome": 4641652,
+  "reads": 309443,
+  "chars": 46416450,
+  "js": "not run",
+  "cpp": "skipped",
+  "rust": "121.40s, 6316 MB, len 4603069, W 4602085"
+ }
+]

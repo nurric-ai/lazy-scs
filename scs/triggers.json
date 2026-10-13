@@ -1,0 +1,37 @@
+{
+ "opened_cycle": [
+  "babab",
+  "babbab"
+ ],
+ "band_join": [
+  "abaabaab",
+  "abbab"
+ ],
+ "requests": [
+  "aaaa",
+  "aaabaaaaaabaaaaaa"
+ ],
+ "host_requests": [
+  "aaaa",
+  "aaabaaaaaabaaaaaa"
+ ],
+ "short_contact_link": [
+  "babab",
+  "babbab"
+ ],
+ "upper_round_trip": [
+  "bbbbbaabbbbbbaabbbbbbaabbbbbbaabbbbbb",
+  "bbcbbcbbcbbcbbcbbcbbcbb",
+  "bababbaacbabab"
+ ],
+ "individual_link": [
+  "aabbaaabaa",
+  "aaaaaaaaaaaaaaaaaaaaaaaa",
+  "aaabaaabaaaabaaabaaaabaaabaaaabaaabaaaa",
+  "bb",
+  "aaabbbbaaabbbbaaabbbbaaabbbbaaa",
+  "abababababababababababa",
+  "aaaaabbabaaaacbaaaaabbabaaaabbaa",
+  "cbabbbabbabbbabbabbbabb"
+ ]
+}

@@ -1,0 +1,66 @@
+[
+ {
+  "genome": 1000,
+  "reads": 66,
+  "chars": 9900,
+  "js": "0.87s, 261 MB, len 1107, W 980",
+  "cpp": "exit 2: parse error: control character in input string; use the JSON format with escapes for special characters after 0s, 2 MB",
+  "rust": "0.08s, 2 MB, len 1127, W 980"
+ },
+ {
+  "genome": 3000,
+  "reads": 200,
+  "chars": 30000,
+  "js": "2.18s, 491 MB, len 3112, W 2971",
+  "cpp": "skipped",
+  "rust": "0.12s, 4 MB, len 3119, W 2971"
+ },
+ {
+  "genome": 10000,
+  "reads": 666,
+  "chars": 99900,
+  "js": "7.28s, 1205 MB, len 9992, W 9992",
+  "cpp": "skipped",
+  "rust": "0.22s, 17 MB, len 10122, W 9992"
+ },
+ {
+  "genome": 30000,
+  "reads": 2000,
+  "chars": 300000,
+  "js": "23.93s, 3427 MB, len 29954, W 29954",
+  "cpp": "skipped",
+  "rust": "0.43s, 39 MB, len 30093, W 29954"
+ },
+ {
+  "genome": 100000,
+  "reads": 6666,
+  "chars": 999900,
+  "js": "timeout after 300s, 10931 MB",
+  "cpp": "skipped",
+  "rust": "1.96s, 127 MB, len 100111, W 99976"
+ },
+ {
+  "genome": 300000,
+  "reads": 20000,
+  "chars": 3000000,
+  "js": "skipped",
+  "cpp": "skipped",
+  "rust": "5.24s, 379 MB, len 299228, W 298944"
+ },
+ {
+  "genome": 1000000,
+  "reads": 66666,
+  "chars": 9999900,
+  "js": "skipped",
+  "cpp": "skipped",
+  "rust": "18.22s, 1282 MB, len 995382, W 994805"
+ },
+ {
+  "genome": 4641652,
+  "reads": 309443,
+  "chars": 46416450,
+  "js": "skipped",
+  "cpp": "skipped",
+  "rust": "102.96s, 5839 MB, len 4603736, W 4602085"
+ }
+]

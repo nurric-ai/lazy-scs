@@ -1,0 +1,16 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "Lazy Periodic Rules: A Scalable Implementation of the Factor-2 Approximation for Shortest Common Superstring"
+authors:
+  - family-names: Dere
+    given-names: Krushna
+    affiliation: "Svyatoblood independent researchers"
+license: MIT
+version: "1.0.0"
+date-released: "2026-10-13"
+repository-code: "https://github.com/nurric-ai/lazy-scs"
+keywords:
+  - shortest common superstring
+  - approximation algorithms
+  - suffix automaton
+  - Lean 4

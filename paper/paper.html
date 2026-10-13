@@ -1,0 +1,297 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Lazy Periodic Rules: A Scalable Factor-2 Shortest Common Superstring</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]})"></script>
+<style>
+  @page { size: A4; margin: 22mm 20mm 22mm 20mm; }
+  body { font-family: "Cambria", "Georgia", serif; font-size: 10.5pt; line-height: 1.42; color: #111; max-width: 170mm; margin: auto; }
+  h1 { font-size: 17pt; text-align: center; margin: 0 0 6pt; line-height: 1.25; }
+  .authors { text-align: center; font-size: 11pt; margin-bottom: 2pt; }
+  .date { text-align: center; font-size: 9.5pt; color: #444; margin-bottom: 14pt; }
+  .abstract { margin: 0 8mm 14pt; font-size: 9.8pt; }
+  .abstract b { display: block; text-align: center; margin-bottom: 3pt; }
+  h2 { font-size: 12.5pt; margin: 16pt 0 5pt; }
+  h3 { font-size: 11pt; margin: 11pt 0 4pt; }
+  p { margin: 0 0 6pt; text-align: justify; }
+  table { border-collapse: collapse; margin: 6pt auto 4pt; font-size: 9.2pt; }
+  th, td { padding: 2.5pt 7pt; border-bottom: 0.5pt solid #bbb; text-align: right; }
+  th { border-top: 1pt solid #111; border-bottom: 1pt solid #111; }
+  td:first-child, th:first-child { text-align: left; }
+  tr:last-child td { border-bottom: 1pt solid #111; }
+  .cap { font-size: 9.2pt; text-align: center; margin: 2pt 6mm 10pt; color: #222; }
+  .thm { margin: 6pt 0; padding-left: 0; }
+  .thm b { font-style: normal; }
+  .thm i { font-style: italic; }
+  code { font-family: Consolas, monospace; font-size: 9pt; }
+  .refs p { text-align: left; font-size: 9.3pt; padding-left: 18pt; text-indent: -18pt; margin-bottom: 3pt; }
+  .box { border: 0.6pt solid #888; padding: 6pt 9pt; margin: 8pt 0; font-size: 9.6pt; }
+</style>
+</head>
+<body>
+
+<h1>Lazy Periodic Rules: A Scalable Implementation of the Factor-2 Approximation for Shortest Common Superstring</h1>
+<div class="authors">Krushna Dere<br><span style="font-size:10pt">Svyatoblood independent researchers</span></div>
+<div class="date">October 2026</div>
+
+<div class="abstract"><b>Abstract</b>
+The first polynomial-time factor-2 approximation for the shortest common superstring (SCS) problem
+was published in September 2026 as result 128 of the OpenAI mathematics collection. Its lower bound
+is built from forced occurrence counts on every distinct substring of the input, including a periodic
+rule that applies to almost every word. Every implementation we know of therefore uses memory that grows
+quadratically in the input length. We show that the periodic rules can be enabled <i>lazily</i>, only
+for the periodic texts on which the construction actually invokes them, without losing the factor-2
+guarantee: any subset of the rules still yields a valid lower bound $W' \le \mathrm{OPT}$, and the
+construction uses a periodic rule at exactly one step, whose success is checked at run time. Without
+the periodic rules, the counts on each state of a generalised suffix automaton form a nonincreasing step
+function of the word length, which gives a representation with one step function per automaton state.
+The core of this argument is machine-checked in Lean&nbsp;4 with Mathlib. We implement the algorithm in
+Rust together with an independent checker that re-justifies every count from scratch; it verifies exactly
+the hypothesis of the formalised certificate theorem. On error-free 150&nbsp;bp reads at
+10&times; coverage of the <i>E.&nbsp;coli</i> K-12 genome (46.4 million input characters) the
+implementation runs in about two minutes on a laptop and returns a superstring within
+0.021% of the certified lower bound. We also report branch coverage of the
+construction, the behaviour of greedy on Shibata&rsquo;s recent counterexample to the greedy conjecture,
+and a head-to-head comparison with two other published implementations.
+</div>
+
+<h2>1&nbsp;&nbsp;Introduction</h2>
+<p>Given strings $s_1,\dots,s_n$, the shortest common superstring problem asks for a shortest string
+containing every $s_i$ as a contiguous substring. The problem is NP-hard and APX-hard, and a long line of
+approximation algorithms reached ratios near $2.47$ [3, 8]. In September 2026 a polynomial-time factor-2
+algorithm appeared as result 128 of the OpenAI mathematics collection [1] (henceforth <i>the paper</i>);
+its statement is formalised in Lean in the same repository. Independently, Shibata [2] disproved the
+37-year-old greedy superstring conjecture, showing that the classical greedy algorithm can be forced to a
+ratio approaching $9/4$.</p>
+<p>The paper's algorithm computes, for every distinct substring $s$ of the input, a count $m(s)$ that no
+common superstring can undercut. Two kinds of rule define these counts: extension inequalities, and a
+periodic rule (2.6) indexed by a word $v$ with a period $p&lt;|v|$. Because every word with a border has
+such a period, the periodic rules range over almost all of the $\Theta(L^2)$ distinct substrings of an
+input of total length $L$. Within days of publication, implementations appeared in Lean, JavaScript, C++
+and (partially) Rust [4&ndash;7]; all of them enumerate distinct substrings explicitly.</p>
+<p><b>Contributions.</b> (i) We prove that the periodic rules may be enabled lazily, per periodic text,
+only when the construction needs them, while keeping the guarantee $|T| \le 2W' \le 2\,\mathrm{OPT}$
+(Section 3). (ii) We show that the counts obtained without the periodic rules are piecewise constant
+on the states of a generalised suffix automaton, and give a representation with one nonincreasing step
+function per state, together with edge enumeration in $O(\text{states} + W)$ (Section 4). (iii) We
+provide a Rust implementation with an independent certificate checker (Section 5). (iv) We machine-check the
+core lower-bound argument in Lean&nbsp;4. (v) We report correctness against exact optima, branch coverage,
+and scaling to a bacterial genome (Section 6).</p>
+
+<h2>2&nbsp;&nbsp;Background</h2>
+<p>We follow the paper's notation and summarise only what we need. Let $V$ be the set of distinct
+substrings of the (reduced) inputs, including the empty word $\varepsilon$. Counts $m(s)$ are defined in
+decreasing order of length as the least integers satisfying
+$$m(s) \ge \sum_{c} m(cs),\qquad m(s) \ge \sum_{c} m(sc),\qquad m(s)\ge 1 \text{ if } s \text{ is an input},\tag{2.5}$$
+and, for every periodic text $A$ of period $p$, every $v = A[0{:}|v|) \in V$ with $p&lt;|v|$, and every
+prefix $w$ of $v$ with $|v| = |w| + kp$,
+$$m(v) > B_A(v;m) \;\Longrightarrow\; m(w) \ge B_A(w;m) + k + 1,\tag{2.6}$$
+where $B_A(s;m)=\sum_r b_{A,s}(r)\,m(r)$ is the <i>blocking functional</i>: it counts occurrences of $s$
+that are bracketed, inside a word of $V$, by the nearest mismatches with $A$ on both sides. The paper
+proves $m(s) \le N_T(s)$ for every common superstring $T$ (Lemma 2.1), so
+$W=\sum_c m(c) \le \mathrm{OPT}$. Edge multiplicities $u(s)=m(s)-\sum_c m(cs)$ and
+$d(s)=m(s)-\sum_c m(sc)$ define a balanced &ldquo;hierarchical&rdquo; graph with $W$ up edges. Its closed
+walks are reorganised into periodic <i>layers</i> (Section 3 of the paper), each of period $p$ carrying a
+budget $p$; the budgets sum to $W$. Sections 4&ndash;6 of the paper connect every layer to
+$\varepsilon$ with additional closed walks paid for by these budgets, and an Euler tour spells a common
+superstring of length at most $2W$.</p>
+
+<h2>3&nbsp;&nbsp;Lazy periodic rules</h2>
+<p>The lazy variant computes counts $m'$ from (2.5) exactly and from the rules (2.6) only for an explicit
+set $E$ of enabled periodic texts (identified by period and least rotation). The enabled rules are applied
+as point lower bounds and iterated to a fixpoint: each pass evaluates every enabled rule on the current
+counts, raises $m'(w)$ where a triggered rule is violated, and recomputes the extension closure. The
+construction of the paper then runs unchanged. If its record search (Section 5.3 of the paper) fails,
+the text of the group being processed is added to $E$ and the run restarts.</p>
+
+<div class="thm"><b>Lemma 1</b> (generalised Lemma 2.1). <i>Let $m'$ be any vector in which every value
+is the maximum of an extension bound, the required-string bound, and bounds from rules (2.6) whose
+triggers hold, all evaluated on values that do not exceed the true occurrence counts $N_T$. Then
+$m' \le N_T$ for every common superstring $T$; in particular $W' = \sum_c m'(c) \le \mathrm{OPT}$.</i></div>
+<p><i>Proof.</i> The paper's proof of Lemma 2.1 at a word $w$ reads only counts of longer words and uses
+only that they are at most $N_T$. For a triggered rule there are two cases. If $N(v) > B_A(v;N)$, then
+$N(w) \ge B_A(w;N) + k + 1 \ge B_A(w;m') + k + 1$, because $B_A$ has nonnegative coefficients and
+$m' \le N$ termwise. Otherwise $B_A(v;N) \ge N(v) \ge m'(v) > B_A(v;m')$, so some bracketing word $r$
+has $N(r) - m'(r) \ge 1$. Within $r$, the $k+1$ period-spaced prefixes of a counted placement of $v$ give
+$b_{A,w}(r) \ge k + 1$, hence $B_A(w;N) - B_A(w;m') \ge k + 1$. Inducting over the sequence of
+assignments (rather than over word length) shows that every value ever assigned is at most $N_T$. $\square$</p>
+
+<div class="thm"><b>Theorem 2.</b> <i>For every input, the lazy variant terminates in polynomial time and
+outputs a common superstring $T$ with $|T| \le 2W' \le 2\,\mathrm{OPT}$.</i></div>
+<p><i>Proof sketch.</i> Lemma 2.2 of the paper (balance, $W'$ up edges, required strings used) needs only
+(2.5) and the required-string bound, which the final pass enforces exactly. Lemmas 3.1&ndash;3.5 follow from
+the edge multiplicities and the definition of $B_A$. In particular, the trigger of the rule for
+$(A, v = A[t{:}H), w = A[t{:}H-K), k)$ in Section 5.3 holds automatically, because the top layer records
+an unblocked occurrence of $v$. Section 5.3 is the only step that invokes a periodic rule, and it does
+so only to show that a record exists. Every later step (Section 5.4, Lemmas 4.3&ndash;4.4, Section 6)
+uses only properties of the record actually found, all of which are checked; the bound $b-a&lt;p+q$
+follows from Lemma 3.4 alone. If the search fails, enabling the group's text makes every triggered rule
+on it hold, so a text is never needed twice. There are at most $O(L^2)$ texts that can carry a rule, so
+the number of rounds is polynomial. Budgets sum to $W'$ by Lemma 3.2, which gives $|T| \le 2W'$. $\square$</p>
+<p><b>Formalisation.</b> Lemma 1 is checked in Lean&nbsp;4 (v4.35.0) with Mathlib, in the file
+<code>LazySCS.lean</code>, over an abstract type of words. Theorem <code>rule_sound</code> states that a
+periodic rule evaluated on any vector below the true counts is sound. Theorem <code>certificate</code>
+states that if every count is at most some sound bound that reads only strictly longer words, then every
+count is at most the true count. <code>lower_bound</code> sums this over one-letter words. The facts the
+paper proves about true occurrence counts enter as explicit hypotheses: its equation (2.4), the two cases
+of its Lemma 2.1, and the extension inequalities. Lean reports that all three theorems depend only on the
+standard axioms <code>propext</code>, <code>Classical.choice</code> and <code>Quot.sound</code>.</p>
+<p>The bound $2W'$ is never weaker than the paper's $2W$, since $W' \le W$. The per-instance certificate
+$|T|/W'$ can be looser than $|T|/W$, but on every read set we tested no periodic rule was needed, so
+$W' = W$ there.</p>
+
+<h2>4&nbsp;&nbsp;Counts on a suffix automaton</h2>
+<p>Let $X$ be a state of the generalised suffix automaton of the inputs, holding the words of lengths
+$(\mathrm{len}(\mathrm{link}\,X), \mathrm{len}\,X]$. All words of $X$ share their right extensions:
+$sc$ lies in $\delta(X,c)$. Every word of $X$ except the longest has exactly one left extension,
+namely the next longer word of $X$. The left extensions of the longest word are the shortest words of the
+states $Z$ with $\mathrm{link}\,Z = X$. Hence, under (2.5) and the required-string bound alone, $m$
+restricted to $X$ is the nonincreasing step function
+$$m_X(\mathrm{len}\,X) = \max\Big(\sum_{\mathrm{link} Z = X} m_Z(\mathrm{minlen}\,Z),\; R_X(\mathrm{len}\,X),\; [X \ni \text{input}]\Big),\qquad
+m_X(l) = \max\big(m_X(l+1), R_X(l)\big),$$
+with $R_X(l) = \sum_c m_{\delta(X,c)}(l+1)$. Processing states by decreasing length respects every
+dependency. Enabled periodic rules enter as point lower bounds at $(X,l)$. Edge multiplicities are
+nonzero only where $m_X$ steps or where $m_X > R_X$; the latter ranges have total weight at most $W$, so
+all nonzero edges are enumerated in $O(\text{states} + W)$ time. A word is identified by the pair
+(state, length), and all walk operations (append a letter, delete the first letter) are $O(1)$ on these
+pairs. On the 4,503 test instances of Section 6, the compressed counts, $W$ and every edge multiplicity
+agree exactly with an explicit per-substring reference implementation.</p>
+
+<h2>5&nbsp;&nbsp;Implementation and certificate</h2>
+<p>The Rust implementation follows the paper's Sections 3&ndash;7 on (state, length) vertices. Each run
+checks at run time that the windows are vertices, that the walks are closed, that the budget is not
+exceeded, that $|T| \le 2W'$, and that every input occurs in $T$. Lemma 1 is the only ingredient of the
+guarantee that cannot be checked from the output, so we provide an <b>independent checker</b>. It
+recomputes, from the automaton and the final step functions alone, the extension sums, the
+suffix-link-tree sums and every enabled periodic rule, using its own straightforward implementation of
+$B_A$. It then confirms that each count is justified by a bound that mentions only strictly longer
+words. If every check passes, the formalised theorem <code>certificate</code> applies directly: its hypothesis
+is exactly what the checker verifies. Two implementation details mattered in
+practice. First, hashing (state, length) keys with a multiplicative hash that mixes only towards the
+high bits made every bucket depend on the word length alone, which produced quadratic behaviour; a
+splitmix64 finaliser fixed it. Second, the blocking functional must extend matches one letter at a time
+rather than re-walking from the root.</p>
+
+<h2>6&nbsp;&nbsp;Experiments</h2>
+<p>All experiments ran on a Windows laptop with 24&nbsp;GB of RAM. Read sets are error-free 150&nbsp;bp
+reads sampled uniformly at 10&times; coverage.</p>
+
+<h3>6.1&nbsp;&nbsp;Correctness</h3>
+<p>We use 4,503 instances from six families: mixed random, random over four letters, genome-like reads,
+periodic, nested periodic, and Shibata instances. On every instance, both the Python and the Rust
+implementations of the lazy variant return a valid superstring with $|T| \le 2W'$, and $W' \le \mathrm{OPT}$
+whenever the exact optimum is computable (by subset dynamic programming, up to 12 strings). The worst
+observed ratio is $1.96$. The independent checker justified all 402,535 checkpoints with no failures. A
+further 160,000 random repetitive instances (Section 6.2) also passed every run-time check.</p>
+
+<table>
+<tr><th>Family</th><th>n</th><th>rules (full set)</th><th>texts enabled (mean / max)</th><th>no rule needed</th><th>max rounds</th></tr>
+<tr><td>mixed random</td><td>3000</td><td>150</td><td>1.39 / 6</td><td>30%</td><td>7</td></tr>
+<tr><td>random, 4 letters</td><td>400</td><td>74</td><td>0.01 / 1</td><td>98%</td><td>2</td></tr>
+<tr><td>genome-like reads</td><td>400</td><td>423</td><td>0.00 / 0</td><td>100%</td><td>1</td></tr>
+<tr><td>periodic</td><td>400</td><td>350</td><td>2.92 / 6</td><td>1%</td><td>7</td></tr>
+<tr><td>nested periodic</td><td>300</td><td>435</td><td>2.25 / 6</td><td>6%</td><td>7</td></tr>
+</table>
+<div class="cap">Table 1. Lazy rules versus the full rule set (average number of rules per instance).
+No static subset of rules is safe: with only &ldquo;square&rdquo; rules ($|v| \ge 2p$), 189 of 4,503
+instances fail at Section 5.3.</div>
+
+<h3>6.2&nbsp;&nbsp;Branch coverage</h3>
+<p>Randomised testing almost never reaches the deeper branches of the construction, so we searched
+specifically for inputs that trigger them, over 100,000 random repetitive instances plus 60,000 with
+alternative record-search orders. Host requests (Lemma 4.4) fired 213 times; the smallest trigger is
+the two-string input <code>aaaa</code>, <code>aaabaaaaaabaaaaaa</code>. Opened cycles fired 828 times,
+band joins 723, short-contact links 108, upper round trips 19 and individual links 2. Every trigger
+also passed the exact-optimum check. Two branches never fired: layers rooted below a baseline
+(Section 5.1) and single-block cycles (Section 6). We report them as untested.</p>
+
+<h3>6.3&nbsp;&nbsp;Quality versus greedy</h3>
+<table>
+<tr><th>Family (300 instances)</th><th>greedy mean / worst</th><th>2-apx raw</th><th>2-apx trimmed</th><th>best of both</th></tr>
+<tr><td>random, 4 letters</td><td>1.005 / 1.074</td><td>1.252 / 1.688</td><td>1.103 / 1.500</td><td>1.004 / 1.074</td></tr>
+<tr><td>random, 2 letters</td><td>1.012 / 1.136</td><td>1.265 / 1.867</td><td>1.082 / 1.462</td><td>1.007 / 1.133</td></tr>
+<tr><td>genome reads</td><td>1.000 / 1.026</td><td>1.262 / 1.643</td><td>1.054 / 1.552</td><td>1.000 / 1.026</td></tr>
+<tr><td>periodic</td><td>1.001 / 1.091</td><td>1.441 / 1.939</td><td>1.106 / 1.692</td><td>1.001 / 1.091</td></tr>
+</table>
+<div class="cap">Table 2. Length divided by the exact optimum on small instances. On typical inputs greedy
+is better than the factor-2 construction; the guarantee matters only in the worst case.</div>
+
+<table>
+<tr><th>$k$, $t$</th><th>OPT</th><th>greedy (adversarial ties)</th><th>ratio</th><th>2-apx</th><th>ratio</th></tr>
+<tr><td>10, 5</td><td>119</td><td>231</td><td>1.941</td><td>215</td><td>1.807</td></tr>
+<tr><td>10, 20</td><td>449</td><td>921</td><td>2.051</td><td>860</td><td>1.915</td></tr>
+<tr><td>14, 10</td><td>313</td><td>641</td><td>2.048</td><td>590</td><td>1.885</td></tr>
+<tr><td>20, 10</td><td>439</td><td>911</td><td>2.075</td><td>830</td><td>1.891</td></tr>
+</table>
+<div class="cap">Table 3. Shibata's instances $S_{k,t}$ [2]. We replay the greedy run from [2] and check
+that every merge has the current maximum overlap. Greedy exceeds twice the optimum, while the factor-2
+construction stays below it. With our own deterministic tie-breaking, greedy happens to avoid the trap
+(e.g. 685 for $k=10, t=20$).</div>
+
+<h3>6.4&nbsp;&nbsp;Scale and comparison with other implementations</h3>
+<p>We ran our implementation and the two other complete, runnable implementations, JavaScript [5] and
+C++ [6], on error-free 150&nbsp;bp reads at 10&times; coverage from prefixes of the <i>E.&nbsp;coli</i>
+K-12 genome (NC_000913.3). Each run had a limit of 300&nbsp;s. The Lean implementation [4] reports
+timeouts on five strings of three letters, so we did not include it. We built the C++ code in release
+mode with MSVC, after replacing its GCC-only warning flags.</p>
+<table>
+<tr><th>Genome prefix</th><th>characters</th><th>JavaScript [5]</th><th>C++ [6]</th><th>this work</th><th>$|T|/W$ (ours)</th></tr>
+<tr><td>200&nbsp;bp</td><td>1,950</td><td>0.12&nbsp;s</td><td>111&nbsp;s</td><td>&lt;0.01&nbsp;s</td><td>1.000</td></tr>
+<tr><td>1&nbsp;kb</td><td>9,900</td><td>0.87&nbsp;s, 261&nbsp;MB</td><td>timeout</td><td>0.08&nbsp;s, 2&nbsp;MB</td><td>1.130</td></tr>
+<tr><td>3&nbsp;kb</td><td>30,000</td><td>2.2&nbsp;s, 491&nbsp;MB</td><td>&mdash;</td><td>0.12&nbsp;s, 6&nbsp;MB</td><td>1.047</td></tr>
+<tr><td>10&nbsp;kb</td><td>99,900</td><td>7.3&nbsp;s, 1.2&nbsp;GB</td><td>&mdash;</td><td>0.22&nbsp;s, 16&nbsp;MB</td><td>1.000</td></tr>
+<tr><td>30&nbsp;kb</td><td>0.3&nbsp;M</td><td>24&nbsp;s, 3.4&nbsp;GB</td><td>&mdash;</td><td>0.52&nbsp;s, 44&nbsp;MB</td><td>1.000</td></tr>
+<tr><td>100&nbsp;kb</td><td>1.0&nbsp;M</td><td>timeout (10.9&nbsp;GB)</td><td>&mdash;</td><td>1.9&nbsp;s, 143&nbsp;MB</td><td>1.00001</td></tr>
+<tr><td>300&nbsp;kb</td><td>3.0&nbsp;M</td><td>&mdash;</td><td>&mdash;</td><td>6.2&nbsp;s, 417&nbsp;MB</td><td>1.00095</td></tr>
+<tr><td>1&nbsp;Mb</td><td>10.0&nbsp;M</td><td>&mdash;</td><td>&mdash;</td><td>22&nbsp;s, 1.4&nbsp;GB</td><td>1.00042</td></tr>
+<tr><td>4.64&nbsp;Mb (full)</td><td>46.4&nbsp;M</td><td>&mdash;</td><td>&mdash;</td><td>121&nbsp;s, 6.3&nbsp;GB</td><td>1.00021</td></tr>
+</table>
+<div class="cap">Table 4. Wall time and peak memory, including our end trimming; &ldquo;&mdash;&rdquo; means the
+implementation was not run after an earlier timeout. Wherever both completed, our output length equals the
+JavaScript output length exactly (e.g. 29,954 at 30&nbsp;kb). For the full genome, $W = 4{,}602{,}085$ and
+$|T| = 4{,}603{,}069$; the construction uses 12 periodic groups and needs no periodic rule. The independent
+checker verifies all 80.6 million checkpoints in about 14&nbsp;s more. The superstring is shorter than the
+genome because SCS merges repeats longer than the read length. This is a property of the problem, and it
+is why genome assemblers do not use SCS.</div>
+
+<h2>7&nbsp;&nbsp;Limitations</h2>
+<p>The lower-bound half of Theorem 2 is machine-checked, but only relative to the paper's facts about true
+occurrence counts, which we take as hypotheses rather than re-deriving from strings. The other half, that
+the construction invokes a periodic rule only at its Section 5.3, is an informal argument from re-reading
+the paper. It is supported by run-time checks of every step and by the fact that no requested text was
+ever requested twice. The independent checker and the Rust implementation are themselves unverified
+code. Two branches of the
+construction were never exercised (Section 6.2). The read sets are error-free; real sequencing errors are
+outside the SCS model. On typical inputs, greedy produces shorter superstrings, so the contribution here
+is scale and certification, not better average output.</p>
+
+<h2>Disclosure of AI assistance</h2>
+<p>An AI assistant (referred to here as wigip) wrote the implementation, ran the experiments, and drafted
+this manuscript under the author's direction. The author directed the work, chose its scope and is
+responsible for the content. The lazy-rule argument (Section 3) was proposed and checked with the
+assistant's help and has not been independently peer reviewed.</p>
+
+<h2>Code and data availability</h2>
+<p id="avail">Source code, test generators, trigger instances and benchmark scripts: [DOI / repository
+to be added on publication]. The <i>E. coli</i> reference is NCBI NC_000913.3.</p>
+
+<h2>References</h2>
+<div class="refs">
+<p>[1] OpenAI. A polynomial-time 2-approximation for shortest common superstring. Result 128,
+<i>openai/math</i> manuscript collection, September 24, 2026. https://github.com/openai/math</p>
+<p>[2] H. Shibata. Disproving the greedy superstring conjecture. arXiv:2609.01365, 2026.</p>
+<p>[3] M. Englert, N. Matsakis, P. Vesel&yacute;. Approximation guarantees for shortest superstrings:
+simpler and better. ISAAC 2023.</p>
+<p>[4] buberlo/veriscs: executable machine-checked 2-approximation (Lean 4). GitHub, 2026.</p>
+<p>[5] V. Karakoidas. shortest-superstring-js. GitHub, 2026.</p>
+<p>[6] spele1100/scs-2approx: certified factor-2 approximation (C++17). GitHub, 2026.</p>
+<p>[7] rongou/superstring-rs (Rust, partial). GitHub, 2026.</p>
+<p>[8] A. Blum, T. Jiang, M. Li, J. Tromp, M. Yannakakis. Linear approximation of shortest superstrings.
+J. ACM 41(4), 1994.</p>
+</div>
+</body>
+</html>

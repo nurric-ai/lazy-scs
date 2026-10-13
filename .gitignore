@@ -1,0 +1,7 @@
+target/
+__pycache__/
+*.pyc
+*.out
+hunt_batch.txt
+vbatch.txt
+trig_batch.txt
