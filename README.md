@@ -1,11 +1,18 @@
 # lazy-scs
 
+[![PyPI](https://img.shields.io/pypi/v/lazy-scs)](https://pypi.org/project/lazy-scs/)
+[![wheels](https://github.com/nurric-ai/lazy-scs/actions/workflows/wheels.yml/badge.svg)](https://github.com/nurric-ai/lazy-scs/actions/workflows/wheels.yml)
+[![Code DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23362570.svg)](https://doi.org/10.5281/zenodo.23362570)
+[![Paper DOI](https://img.shields.io/badge/paper-10.5281%2Fzenodo.23348394-blue)](https://doi.org/10.5281/zenodo.23348394)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+
 A scalable implementation of the polynomial-time **factor-2 approximation for shortest common
 superstring** (SCS), [openai/math result 128](https://github.com/openai/math), using **lazy periodic rules**
 and **suffix-automaton counts**.
 
 > **Lazy Periodic Rules: A Scalable Implementation of the Factor-2 Approximation for Shortest Common
-> Superstring**, Krushna Dere and Svyatoblood, independent researchers, October 2026. [paper/paper.pdf](paper/paper.pdf)
+> Superstring**, Krushna Dere and Svyatoblood, independent researchers, October 2026. [paper/paper.pdf](paper/paper.pdf) ·
+> [doi:10.5281/zenodo.23348394](https://doi.org/10.5281/zenodo.23348394)
 
 Given strings `s1 … sn`, SCS asks for a shortest string containing every `si` as a substring. The
 factor-2 algorithm builds its lower bound from forced occurrence counts on every distinct substring,

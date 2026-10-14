@@ -8,6 +8,7 @@ authors:
   - given-names: Svyatoblood
     affiliation: "Independent researcher"
 license: MIT
+doi: "10.5281/zenodo.23362570"
 version: "1.0.0"
 date-released: "2026-10-13"
 repository-code: "https://github.com/nurric-ai/lazy-scs"
@@ -16,3 +17,12 @@ keywords:
   - approximation algorithms
   - suffix automaton
   - Lean 4
+preferred-citation:
+  type: article
+  title: "Lazy Periodic Rules: A Scalable Implementation of the Factor-2 Approximation for Shortest Common Superstring"
+  authors:
+    - family-names: Dere
+      given-names: Krushna
+    - given-names: Svyatoblood
+  doi: "10.5281/zenodo.23348394"
+  year: 2026
