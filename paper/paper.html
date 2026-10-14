@@ -35,12 +35,14 @@
 <body>
 
 <h1>Lazy Periodic Rules: A Scalable Implementation of the Factor-2 Approximation for Shortest Common Superstring</h1>
-<div class="authors">Krushna Dere and Svyatoblood<br><span style="font-size:10pt">Independent researchers</span></div>
+<div class="authors">Krushna Dere and Svyatoslav Shmidt</div>
 <div class="date">October 2026</div>
 
 <div class="abstract"><b>Abstract</b>
 The first polynomial-time factor-2 approximation for the shortest common superstring (SCS) problem
-was published in September 2026 as result 128 of the OpenAI mathematics collection. Its lower bound
+was published in September 2026 as result 128 of the OpenAI mathematics collection, a non-peer-reviewed
+manuscript repository whose own catalogue warns that unformalized results \"could have issues\"; we
+therefore treat its proof as a hypothesis wherever we rely on it. Its lower bound
 is built from forced occurrence counts on every distinct substring of the input, including a periodic
 rule that applies to almost every word. Every implementation we know of therefore uses memory that grows
 quadratically in the input length. We show that the periodic rules can be enabled <i>lazily</i>, only
@@ -62,14 +64,19 @@ and a head-to-head comparison with two other published implementations.
 <h2>1&nbsp;&nbsp;Introduction</h2>
 <p>Given strings $s_1,\dots,s_n$, the shortest common superstring problem asks for a shortest string
 containing every $s_i$ as a contiguous substring. The problem is NP-hard and APX-hard, and a long line of
-approximation algorithms reached ratios near $2.47$ [3, 8]. In September 2026 a polynomial-time factor-2
+approximation algorithms reached ratios below 2.5, the best published being $(\sqrt{67}+14)/9 \approx 2.466$ [3], improving
+Mucha's $2\frac{11}{23}$ [9] and the $2.475$ of Englert, Matsakis and Veselý (STOC 2022) [3]. The
+classical greedy algorithm was known to be at most a $3.396$-approximation [3], improving the $3.5$ of
+Kaplan and Shafrir [10] and the $4$ of Blum et al. [8]. In September 2026 a polynomial-time factor-2
 algorithm appeared as result 128 of the OpenAI mathematics collection [1] (henceforth <i>the paper</i>);
-its statement is formalised in Lean in the same repository. Independently, Shibata [2] disproved the
-37-year-old greedy superstring conjecture, showing that the classical greedy algorithm can be forced to a
-ratio approaching $9/4$.</p>
+it is a model-generated manuscript, not peer reviewed, and the repository itself states that not all
+results carry Lean formalizations and that \"some of the unformalized results could have issues\". Its
+statement is formalised in Lean in the same repository. Independently, Shibata [2] gave a preprint
+disproving the greedy superstring conjecture posed by Tarhio and Ukkonen in 1988 (nearly four decades
+earlier), showing that the classical greedy algorithm can be forced to a ratio approaching $9/4$.</p>
 <p>The paper's algorithm computes, for every distinct substring $s$ of the input, a count $m(s)$ that no
 common superstring can undercut. Two kinds of rule define these counts: extension inequalities, and a
-periodic rule (2.6) indexed by a word $v$ with a period $p&lt;|v|$. Because every word with a border has
+periodic rule (2) indexed by a word $v$ with a period $p&lt;|v|$. Because every word with a border has
 such a period, the periodic rules range over almost all of the $\Theta(L^2)$ distinct substrings of an
 input of total length $L$. Within days of publication, implementations appeared in Lean, JavaScript, C++
 and (partially) Rust [4&ndash;7]; all of them enumerate distinct substrings explicitly.</p>
@@ -101,7 +108,7 @@ $\varepsilon$ with additional closed walks paid for by these budgets, and an Eul
 superstring of length at most $2W$.</p>
 
 <h2>3&nbsp;&nbsp;Lazy periodic rules</h2>
-<p>The lazy variant computes counts $m'$ from (2.5) exactly and from the rules (2.6) only for an explicit
+<p>The lazy variant computes counts $m'$ from (1) exactly and from the rules (2) only for an explicit
 set $E$ of enabled periodic texts (identified by period and least rotation). The enabled rules are applied
 as point lower bounds and iterated to a fixpoint: each pass evaluates every enabled rule on the current
 counts, raises $m'(w)$ where a triggered rule is violated, and recomputes the extension closure. The
@@ -109,7 +116,7 @@ construction of the paper then runs unchanged. If its record search (Section 5.3
 the text of the group being processed is added to $E$ and the run restarts.</p>
 
 <div class="thm"><b>Lemma 1</b> (generalised Lemma 2.1). <i>Let $m'$ be any vector in which every value
-is the maximum of an extension bound, the required-string bound, and bounds from rules (2.6) whose
+is the maximum of an extension bound, the required-string bound, and bounds from rules (2) whose
 triggers hold, all evaluated on values that do not exceed the true occurrence counts $N_T$. Then
 $m' \le N_T$ for every common superstring $T$; in particular $W' = \sum_c m'(c) \le \mathrm{OPT}$.</i></div>
 <p><i>Proof.</i> The paper's proof of Lemma 2.1 at a word $w$ reads only counts of longer words and uses
@@ -118,12 +125,12 @@ $N(w) \ge B_A(w;N) + k + 1 \ge B_A(w;m') + k + 1$, because $B_A$ has nonnegative
 $m' \le N$ termwise. Otherwise $B_A(v;N) \ge N(v) \ge m'(v) > B_A(v;m')$, so some bracketing word $r$
 has $N(r) - m'(r) \ge 1$. Within $r$, the $k+1$ period-spaced prefixes of a counted placement of $v$ give
 $b_{A,w}(r) \ge k + 1$, hence $B_A(w;N) - B_A(w;m') \ge k + 1$. Inducting over the sequence of
-assignments (rather than over word length) shows that every value ever assigned is at most $N_T$. $\square$</p>
+assignments (rather than over word length) shows that every value ever assigned is at most $N_T$.</p>
 
 <div class="thm"><b>Theorem 2.</b> <i>For every input, the lazy variant terminates in polynomial time and
 outputs a common superstring $T$ with $|T| \le 2W' \le 2\,\mathrm{OPT}$.</i></div>
 <p><i>Proof sketch.</i> Lemma 2.2 of the paper (balance, $W'$ up edges, required strings used) needs only
-(2.5) and the required-string bound, which the final pass enforces exactly. Lemmas 3.1&ndash;3.5 follow from
+(1) and the required-string bound, which the final pass enforces exactly. Lemmas 3.1&ndash;3.5 follow from
 the edge multiplicities and the definition of $B_A$. In particular, the trigger of the rule for
 $(A, v = A[t{:}H), w = A[t{:}H-K), k)$ in Section 5.3 holds automatically, because the top layer records
 an unblocked occurrence of $v$. Section 5.3 is the only step that invokes a periodic rule, and it does
@@ -131,7 +138,7 @@ so only to show that a record exists. Every later step (Section 5.4, Lemmas 4.3&
 uses only properties of the record actually found, all of which are checked; the bound $b-a&lt;p+q$
 follows from Lemma 3.4 alone. If the search fails, enabling the group's text makes every triggered rule
 on it hold, so a text is never needed twice. There are at most $O(L^2)$ texts that can carry a rule, so
-the number of rounds is polynomial. Budgets sum to $W'$ by Lemma 3.2, which gives $|T| \le 2W'$. $\square$</p>
+the number of rounds is polynomial. Budgets sum to $W'$ by Lemma 3.2, which gives $|T| \le 2W'$.</p>
 <p><b>Formalisation.</b> Lemma 1 is checked in Lean&nbsp;4 (v4.35.0) with Mathlib, in the file
 <code>LazySCS.lean</code>, over an abstract type of words. Theorem <code>rule_sound</code> states that a
 periodic rule evaluated on any vector below the true counts is sound. Theorem <code>certificate</code>
@@ -149,7 +156,7 @@ $W' = W$ there.</p>
 $(\mathrm{len}(\mathrm{link}\,X), \mathrm{len}\,X]$. All words of $X$ share their right extensions:
 $sc$ lies in $\delta(X,c)$. Every word of $X$ except the longest has exactly one left extension,
 namely the next longer word of $X$. The left extensions of the longest word are the shortest words of the
-states $Z$ with $\mathrm{link}\,Z = X$. Hence, under (2.5) and the required-string bound alone, $m$
+states $Z$ with $\mathrm{link}\,Z = X$. Hence, under (1) and the required-string bound alone, $m$
 restricted to $X$ is the nonincreasing step function
 $$m_X(\mathrm{len}\,X) = \max\Big(\sum_{\mathrm{link} Z = X} m_Z(\mathrm{minlen}\,Z),\; R_X(\mathrm{len}\,X),\; [X \ni \text{input}]\Big),\qquad
 m_X(l) = \max\big(m_X(l+1), R_X(l)\big),$$
@@ -267,7 +274,9 @@ ever requested twice. The independent checker and the Rust implementation are th
 code. Two branches of the
 construction were never exercised (Section 6.2). The read sets are error-free; real sequencing errors are
 outside the SCS model. On typical inputs, greedy produces shorter superstrings, so the contribution here
-is scale and certification, not better average output.</p>
+is scale and certification, not better average output. Finally, both [1] and [2] are unrefereed preprints:
+the status of [1] in particular may change as the collection is revised, and our results are conditional
+on its lemmas about true occurrence counts, which we verify only as hypotheses in Lean.</p>
 
 <h2>Disclosure of AI assistance</h2>
 <p>An AI assistant (referred to here as wigip) wrote the implementation, ran the experiments, and drafted
@@ -294,6 +303,10 @@ simpler and better. ISAAC 2023.</p>
 <p>[7] rongou/superstring-rs (Rust, partial). GitHub, 2026.</p>
 <p>[8] A. Blum, T. Jiang, M. Li, J. Tromp, M. Yannakakis. Linear approximation of shortest superstrings.
 J. ACM 41(4), 1994.</p>
+<p>[9] M. Mucha. Lyndon words and short superstrings. SODA 2013.</p>
+<p>[10] H. Kaplan, N. Shafrir. The greedy algorithm for shortest common superstrings. Inf. Process. Lett. 93(1), 2005.</p>
+<p>[11] J. Alanko, T. Norri. Greedy shortest common superstring approximation in compact space. arXiv:1707.07727, 2017.</p>
+<p>[12] B. Cazaux, S. Juhel, \xc9. Rivals. Practical lower and upper bounds for the shortest linear superstring. SEA 2018.</p>
 </div>
 </body>
 </html>
